@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "FindMyTabs",
   "version": "1.0.0",
-  "description": "Search, group, and manage your browser tabs.",
+  "description": "Instantly find any tab by title or URL, auto-group by category, close duplicates, and reopen recently closed tabs — all from one keyboard shortcut.",
   "permissions": ["tabs", "tabGroups", "sessions", "storage"],
   "action": {
     "default_popup": "popup/popup.html",
