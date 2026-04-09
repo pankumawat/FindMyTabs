@@ -1,0 +1,8 @@
+{
+  "name": "findmytabs",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/tab-logic.test.js",
+    "icons": "node scripts/create-icons.js"
+  }
+}
