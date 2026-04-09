@@ -18,6 +18,29 @@ body {
   height: 100%;
 }
 
+/* Sponsor banner */
+.sponsor-banner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  background: #181825;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 10px;
+  color: #6c7086;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.sponsor-link {
+  color: #f38ba8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sponsor-link:hover { text-decoration: underline; color: #eba0ac; }
+
 /* Search */
 .search-bar {
   display: flex;

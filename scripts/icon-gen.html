@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FindMyTabs Icon Generator</title>
+<style>
+  body { background: #181825; display: flex; gap: 24px; padding: 24px; align-items: flex-start; flex-wrap: wrap; }
+  canvas { border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.5); }
+  .label { color: #cdd6f4; font-family: monospace; font-size: 12px; text-align: center; margin-top: 8px; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+<script>
+function drawIcon(size) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const ctx = c.getContext('2d');
+  const s = size / 128; // scale factor
+
+  // ── Background: dark rounded square ────────────────────────────────────────
+  const r = size * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r);
+  ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  const bg = ctx.createLinearGradient(0, 0, size, size);
+  bg.addColorStop(0, '#24273a');
+  bg.addColorStop(1, '#1e1e2e');
+  ctx.fillStyle = bg;
+  ctx.fill();
+
+  // ── Magnifying glass ────────────────────────────────────────────────────────
+  const cx = size * 0.44;
+  const cy = size * 0.44;
+  const glassR = size * 0.26;
+  const strokeW = size * 0.095;
+
+  // Lens glow
+  ctx.beginPath();
+  ctx.arc(cx, cy, glassR + strokeW * 0.7, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(137,180,250,0.10)';
+  ctx.fill();
+
+  // Lens fill (subtle blue tint)
+  ctx.beginPath();
+  ctx.arc(cx, cy, glassR, 0, Math.PI * 2);
+  const lensFill = ctx.createRadialGradient(cx - glassR*0.2, cy - glassR*0.2, 0, cx, cy, glassR);
+  lensFill.addColorStop(0, 'rgba(137,180,250,0.22)');
+  lensFill.addColorStop(1, 'rgba(137,180,250,0.06)');
+  ctx.fillStyle = lensFill;
+  ctx.fill();
+
+  // Lens ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, glassR, 0, Math.PI * 2);
+  ctx.strokeStyle = '#89b4fa';
+  ctx.lineWidth = strokeW;
+  ctx.stroke();
+
+  // Handle
+  const angle = Math.PI * 0.75;
+  const hx1 = cx + Math.cos(angle) * (glassR + strokeW * 0.4);
+  const hy1 = cy + Math.sin(angle) * (glassR + strokeW * 0.4);
+  const hx2 = cx + Math.cos(angle) * (glassR + strokeW * 0.4 + size * 0.22);
+  const hy2 = cy + Math.sin(angle) * (glassR + strokeW * 0.4 + size * 0.22);
+  ctx.beginPath();
+  ctx.moveTo(hx1, hy1);
+  ctx.lineTo(hx2, hy2);
+  ctx.strokeStyle = '#89b4fa';
+  ctx.lineWidth = strokeW * 1.05;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // ── Mini tab shapes inside lens ────────────────────────────────────────────
+  if (size >= 32) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, glassR - strokeW * 0.5, 0, Math.PI * 2);
+    ctx.clip();
+
+    const tabW = size * 0.13;
+    const tabH = size * 0.09;
+    const tabR = size * 0.025;
+    const bodyH = size * 0.19;
+    const bodyR = size * 0.025;
+
+    function drawTab(tx, ty, col) {
+      // Tab ear
+      ctx.beginPath();
+      ctx.moveTo(tx + tabR, ty);
+      ctx.lineTo(tx + tabW - tabR, ty);
+      ctx.quadraticCurveTo(tx + tabW, ty, tx + tabW, ty + tabR);
+      ctx.lineTo(tx + tabW, ty + tabH);
+      ctx.lineTo(tx, ty + tabH);
+      ctx.lineTo(tx, ty + tabR);
+      ctx.quadraticCurveTo(tx, ty, tx + tabR, ty);
+      ctx.closePath();
+      ctx.fillStyle = col;
+      ctx.fill();
+      // Body
+      const bx = tx - size * 0.02;
+      const by = ty + tabH;
+      const bw = size * 0.28;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + bw - bodyR, by);
+      ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + bodyR);
+      ctx.lineTo(bx + bw, by + bodyH);
+      ctx.lineTo(bx, by + bodyH);
+      ctx.closePath();
+      ctx.fillStyle = col;
+      ctx.fill();
+    }
+
+    const tBaseX = cx - size * 0.13;
+    const tBaseY = cy - size * 0.22;
+
+    // Back tab (dimmer)
+    drawTab(tBaseX + size * 0.14, tBaseY, 'rgba(180,190,254,0.25)');
+    // Front tab (brighter)
+    drawTab(tBaseX, tBaseY + size * 0.035, 'rgba(137,180,250,0.55)');
+
+    // Lines on front tab body
+    const lineY1 = tBaseY + size * 0.17;
+    const lineX1 = tBaseX + size * 0.02;
+    ctx.beginPath();
+    ctx.moveTo(lineX1, lineY1);
+    ctx.lineTo(lineX1 + size * 0.19, lineY1);
+    ctx.strokeStyle = 'rgba(137,180,250,0.5)';
+    ctx.lineWidth = size * 0.022;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(lineX1, lineY1 + size * 0.045);
+    ctx.lineTo(lineX1 + size * 0.13, lineY1 + size * 0.045);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // ── Shine highlight ─────────────────────────────────────────────────────────
+  if (size >= 48) {
+    ctx.beginPath();
+    ctx.arc(cx - glassR * 0.35, cy - glassR * 0.35, glassR * 0.22, 0, Math.PI * 2);
+    const shine = ctx.createRadialGradient(
+      cx - glassR * 0.35, cy - glassR * 0.35, 0,
+      cx - glassR * 0.35, cy - glassR * 0.35, glassR * 0.22
+    );
+    shine.addColorStop(0, 'rgba(255,255,255,0.18)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine;
+    ctx.fill();
+  }
+
+  return c;
+}
+
+const sizes = [128, 48, 16];
+sizes.forEach(size => {
+  const canvas = drawIcon(size);
+  canvas.id = 'icon' + size;
+  const col = document.createElement('div');
+  col.className = 'col';
+  const lbl = document.createElement('div');
+  lbl.className = 'label';
+  lbl.textContent = size + 'x' + size;
+  col.appendChild(canvas);
+  col.appendChild(lbl);
+  document.body.appendChild(col);
+});
+
+// Export function for extracting PNG data
+window.exportIcons = function() {
+  return sizes.reduce((acc, s) => {
+    acc['icon' + s] = document.getElementById('icon' + s).toDataURL('image/png');
+    return acc;
+  }, {});
+};
+</script>
+</body>
+</html>

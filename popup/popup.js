@@ -232,6 +232,29 @@ document.getElementById('btn-group').addEventListener('click', async () => {
   }
 });
 
+// ── Close duplicate tabs ──────────────────────────────────────────────────────
+document.getElementById('btn-dedup').addEventListener('click', async () => {
+  // Group tabs by exact URL; keep the first occurrence (lowest tab id), close the rest
+  const seen = new Map();   // url → first tab id encountered
+  const toClose = [];
+
+  for (const tab of categorizedTabs) {
+    const url = tab.url;
+    if (!url || url === 'chrome://newtab/') continue;  // skip blank/new-tab pages
+    if (seen.has(url)) {
+      toClose.push(tab.id);
+    } else {
+      seen.set(url, tab.id);
+    }
+  }
+
+  if (toClose.length === 0) return;  // nothing to do
+
+  await chrome.tabs.remove(toClose);
+  categorizedTabs = categorizedTabs.filter(t => !toClose.includes(t.id));
+  render();
+});
+
 // ── Rules button ──────────────────────────────────────────────────────────────
 document.getElementById('btn-rules').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
