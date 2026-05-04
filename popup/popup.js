@@ -255,6 +255,52 @@ document.getElementById('btn-dedup').addEventListener('click', async () => {
   render();
 });
 
+// ── Sort tabs button ──────────────────────────────────────────────────────────
+document.getElementById('btn-sort').addEventListener('click', async () => {
+  // Group unpinned tabs by window (pinned tabs are immovable)
+  const byWindow = {};
+  for (const tab of categorizedTabs) {
+    if (tab.pinned) continue;
+    (byWindow[tab.windowId] = byWindow[tab.windowId] || []).push(tab);
+  }
+
+  for (const tabs of Object.values(byWindow)) {
+    if (tabs.length < 2) continue;
+
+    // Count tabs per hostname and record first-occurrence position
+    const counts    = {};
+    const firstSeen = {};
+    tabs.forEach((tab, i) => {
+      const h = hostname(tab.url);
+      counts[h] = (counts[h] || 0) + 1;
+      if (!(h in firstSeen)) firstSeen[h] = i;
+    });
+
+    // Stable sort: most-tab hostnames first; ties broken by original group order
+    const sorted = [...tabs].sort((a, b) => {
+      const ha = hostname(a.url);
+      const hb = hostname(b.url);
+      const byCount = counts[hb] - counts[ha];
+      if (byCount !== 0) return byCount;
+      return firstSeen[ha] - firstSeen[hb];
+    });
+
+    // Move tabs to contiguous positions starting from their current minimum index
+    const base = Math.min(...tabs.map(t => t.index));
+    for (let i = 0; i < sorted.length; i++) {
+      await chrome.tabs.move(sorted[i].id, { index: base + i });
+    }
+  }
+
+  // Re-fetch to get updated indices and rebuild state
+  const fresh = await chrome.tabs.query({});
+  categorizedTabs = fresh.map(tab => ({
+    ...tab,
+    category: categorizeTab(tab.url, tab.title, customRules),
+  }));
+  render();
+});
+
 // ── Rules button ──────────────────────────────────────────────────────────────
 document.getElementById('btn-rules').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
